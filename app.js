@@ -5,7 +5,6 @@ const WORDS = WORDS_DATA.map(([w, pos, ja, ex, exja]) => ({ id: w, w, pos, ja, e
 const MASTER = 3;          // 3回連続「わかった」で習得
 const SWIPE_X = 110;       // 判定に必要な横移動量(px)
 const SWIPE_UP = 120;      // マーカー判定に必要な上移動量(px)
-const RETRY_GAP = 4;       // 「まだ」の単語を何枚後に再出題するか
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -155,7 +154,7 @@ function judge(dir) {
     if (history.length > 50) history.shift();
     const r = Store.get(cur.id);
     if (dir === "ok") { r.c++; r.s++; }
-    else { r.x++; r.s = 0; queue.splice(Math.min(RETRY_GAP, queue.length), 0, cur); }
+    else { r.x++; r.s = 0; queue.push(cur); }   // 「まだ」の単語はこの周の最後にもう一度
     Store.touch(cur.id);
     busy = false;
     updateHead();
