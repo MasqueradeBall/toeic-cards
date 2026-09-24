@@ -1,0 +1,129 @@
+:root{
+  --desk:#DCE4EC; --card:#FFFFFF; --ink:#1B2838; --sub:#5B6B7D; --line:#C3CEDA;
+  --ok:#23835A; --ng:#C0453A; --mark:#FFE14D; --mark-ink:#4A3D00; --ring:#9AA8B8;
+  --jp:"Zen Kaku Gothic New","Hiragino Sans","Noto Sans JP",system-ui,sans-serif;
+  --en:"Source Serif 4",Georgia,"Times New Roman",serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --desk:#18212C; --card:#243140; --ink:#E9EEF4; --sub:#9AAABB; --line:#3A4A5C;
+    --ok:#4CC08A; --ng:#EE7A6F; --mark:#E9C82E; --mark-ink:#2A2200; --ring:#55667A;
+  }
+}
+*,*::before,*::after{box-sizing:border-box}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100%;background:var(--desk);color:var(--ink);font-family:var(--jp);font-size:16px;line-height:1.6;-webkit-tap-highlight-color:transparent;overscroll-behavior-y:none}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+main{max-width:520px;margin:0 auto;padding:12px 16px 96px}
+header.top{display:flex;align-items:baseline;justify-content:space-between;padding:8px 2px 12px}
+header.top h1{font-size:17px;font-weight:700;margin:0}
+header.top .count{font-size:14px;color:var(--sub);font-variant-numeric:tabular-nums}
+
+/* 出題範囲 */
+.filters{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px}
+.filters button{flex:none;border:1.5px solid var(--line);background:transparent;border-radius:999px;padding:6px 14px;font-size:14px;color:var(--sub)}
+.filters button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--desk)}
+
+/* カードの山 */
+.deck{position:relative;height:min(62vh,440px);margin:4px 0 14px;perspective:1200px}
+.swipe{position:absolute;inset:0;touch-action:none;user-select:none;-webkit-user-select:none;will-change:transform}
+.swipe.behind{transform:scale(.94) translateY(14px);opacity:.7;pointer-events:none}
+.swipe.animating{transition:transform .28s cubic-bezier(.3,.7,.2,1)}
+.flip{position:absolute;inset:0;transform-style:preserve-3d;transition:transform .45s cubic-bezier(.3,.7,.2,1)}
+.flip.flipped{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:28px 22px 20px;display:flex;flex-direction:column;box-shadow:0 10px 24px -14px rgba(27,40,56,.45)}
+.face.back{transform:rotateY(180deg)}
+.hole{position:absolute;top:16px;left:16px;width:16px;height:16px;border-radius:50%;background:var(--desk);box-shadow:inset 0 0 0 2px var(--ring)}
+.front{justify-content:center;align-items:center;text-align:center}
+.word{font-family:var(--en);font-weight:700;font-size:clamp(34px,11vw,48px);line-height:1.15;margin:0;padding:0 .12em;overflow-wrap:anywhere}
+.word.marked{background:linear-gradient(transparent 52%,var(--mark) 52%,var(--mark) 92%,transparent 92%)}
+.pos{margin-top:12px;font-size:14px;color:var(--sub)}
+.tapHint{position:absolute;bottom:18px;left:0;right:0;text-align:center;font-size:13px;color:var(--sub)}
+.back .bword{font-family:var(--en);font-weight:700;font-size:22px;margin:0 48px 2px 24px}
+.back .bword small{font-family:var(--jp);font-weight:400;font-size:14px;color:var(--sub)}
+.back .meaning{font-size:24px;font-weight:700;margin:14px 0 16px;line-height:1.4}
+.back .ex{font-family:var(--en);font-size:17px;line-height:1.5;margin:0 0 6px}
+.back .exja{font-size:14px;color:var(--sub);margin:0}
+.back .rec{margin-top:auto;font-size:13px;color:var(--sub)}
+.speak{position:absolute;top:12px;right:12px;width:40px;height:40px;border-radius:50%;border:1.5px solid var(--line);background:transparent;font-size:17px;display:grid;place-items:center}
+
+/* スワイプ時のスタンプ */
+.stamp{position:absolute;top:26px;z-index:2;padding:4px 12px;border:3px solid;border-radius:8px;font-size:24px;font-weight:700;opacity:0;pointer-events:none;background:var(--card)}
+.stamp.ok{left:22px;color:var(--ok);border-color:var(--ok);transform:rotate(-12deg)}
+.stamp.ng{right:22px;color:var(--ng);border-color:var(--ng);transform:rotate(12deg)}
+.stamp.mk{left:50%;top:auto;bottom:40px;transform:translateX(-50%);color:var(--mark-ink);border-color:var(--mark);background:var(--mark)}
+
+/* 丸ボタン */
+.actions{display:flex;justify-content:center;align-items:center;gap:16px}
+.act{border:none;border-radius:50%;display:grid;place-items:center;background:var(--card);box-shadow:0 4px 14px -6px rgba(27,40,56,.5);transition:transform .12s}
+.act:active{transform:scale(.92)}
+.act.sm{width:48px;height:48px;font-size:18px;color:var(--sub)}
+.act.lg{width:66px;height:66px;font-size:28px;font-weight:700}
+.act.ng{color:var(--ng)}
+.act.ok{color:var(--ok)}
+.act.mk[aria-pressed="true"]{background:var(--mark);color:var(--mark-ink)}
+.act:disabled{opacity:.35}
+.guide{text-align:center;font-size:12px;color:var(--sub);margin:12px 0 0}
+
+.empty{background:var(--card);border:1px dashed var(--line);border-radius:14px;padding:32px 22px;text-align:center;color:var(--sub)}
+.empty strong{display:block;color:var(--ink);font-size:17px;margin-bottom:6px}
+.wide{width:100%;margin-top:14px;border:1.5px solid var(--ink);background:transparent;border-radius:12px;padding:14px;font-size:16px;font-weight:700}
+
+/* チェックリスト */
+.listhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:10px}
+.listhead p{margin:0;color:var(--sub);font-size:14px}
+.pdfbtn{border:none;background:var(--ink);color:var(--desk);border-radius:10px;padding:10px 16px;font-size:15px;font-weight:700;flex:none}
+.pdfbtn:disabled{opacity:.35}
+.tablewrap{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{padding:10px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:500;color:var(--sub);font-size:12px;white-space:nowrap}
+tr:last-child td{border-bottom:none}
+td.w{font-family:var(--en);font-weight:700;font-size:16px;white-space:nowrap}
+td.n{white-space:nowrap;color:var(--sub);font-variant-numeric:tabular-nums}
+.unmark{border:none;background:transparent;color:var(--sub);font-size:18px;padding:0 4px}
+.status{font-size:13px;color:var(--sub);margin-top:10px;min-height:1.4em}
+
+/* 記録 */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 10px}
+.stat b{display:block;font-size:24px;font-variant-numeric:tabular-nums;line-height:1.2}
+.stat span{font-size:12px;color:var(--sub)}
+.bar{height:10px;border-radius:5px;background:var(--line);overflow:hidden;margin:6px 0 22px}
+.bar i{display:block;height:100%;background:var(--ok);transition:width .4s}
+h2{font-size:15px;margin:0 0 8px}
+.note{font-size:13px;color:var(--sub);margin-top:14px}
+.backup{display:flex;gap:8px;margin-top:24px;flex-wrap:wrap}
+.backup button{border:1px solid var(--line);background:transparent;border-radius:10px;padding:10px 14px;font-size:14px}
+.backup .danger{color:var(--ng)}
+
+/* タブ */
+nav.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom,0px);z-index:5}
+nav.tabs .in{display:grid;grid-template-columns:repeat(3,1fr);width:100%;max-width:520px}
+nav.tabs button{border:none;background:transparent;padding:12px 4px;font-size:14px;color:var(--sub);position:relative}
+nav.tabs button[aria-selected="true"]{color:var(--ink);font-weight:700}
+nav.tabs button[aria-selected="true"]::after{content:"";position:absolute;top:0;left:30%;right:30%;height:3px;border-radius:0 0 3px 3px;background:var(--ink)}
+nav.tabs .badge{display:inline-block;min-width:18px;padding:0 5px;margin-left:4px;border-radius:9px;background:var(--mark);color:var(--mark-ink);font-size:11px;font-weight:700;line-height:18px}
+[hidden]{display:none!important}
+
+/* PDF描画エリア */
+#pdfArea{position:fixed;left:-10000px;top:0}
+.pdfpage{width:794px;min-height:1123px;padding:56px;background:#fff;color:#111;font-family:var(--jp)}
+.pdfpage h3{font-size:20px;margin:0 0 4px}
+.pdfpage .meta{font-size:12px;color:#555;margin:0 0 18px}
+.pdfpage table{font-size:13px}
+.pdfpage th{color:#444;background:#EEF2F6;border-bottom:1.5px solid #9AA8B8}
+.pdfpage td{border-bottom:1px solid #D5DCE4}
+.pdfpage td.w{font-size:15px}
+.pdfpage .foot{margin-top:14px;font-size:11px;color:#777;text-align:right}
+
+@media print{
+  body{background:#fff;color:#111}
+  nav.tabs,.filters,header.top,.listhead button,.unmark,#pdfArea,.status{display:none!important}
+  main{padding:0}
+}
+@media (prefers-reduced-motion:reduce){.flip,.swipe.animating{transition:none}}

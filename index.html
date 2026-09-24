@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#DCE4EC">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>TOEIC 800+ 単語カード</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <header class="top">
+      <h1>TOEIC 800+ 単語カード</h1>
+      <span class="count" id="headCount"></span>
+    </header>
+
+    <!-- 学習 -->
+    <section id="view-study">
+      <div class="filters" role="group" aria-label="出題範囲">
+        <button data-f="all" aria-pressed="true">すべて</button>
+        <button data-f="new" aria-pressed="false">未習得</button>
+        <button data-f="weak" aria-pressed="false">苦手</button>
+        <button data-f="marked" aria-pressed="false">マーカー</button>
+      </div>
+      <div id="studyArea"></div>
+    </section>
+
+    <!-- チェックリスト -->
+    <section id="view-list" hidden>
+      <div class="listhead">
+        <p id="listInfo"></p>
+        <button class="pdfbtn" id="pdfBtn">PDFで保存</button>
+      </div>
+      <div id="listArea"></div>
+      <p class="status" id="pdfStatus" role="status"></p>
+    </section>
+
+    <!-- 記録 -->
+    <section id="view-stats" hidden>
+      <div id="statsArea"></div>
+    </section>
+  </main>
+
+  <nav class="tabs" role="tablist">
+    <div class="in">
+      <button role="tab" data-v="study" aria-selected="true">学習</button>
+      <button role="tab" data-v="list" aria-selected="false">チェックリスト<span class="badge" id="markBadge" hidden></span></button>
+      <button role="tab" data-v="stats" aria-selected="false">記録</button>
+    </div>
+  </nav>
+
+  <!-- PDF描画用（画面外） -->
+  <div id="pdfArea" aria-hidden="true"></div>
+  <input type="file" id="importFile" accept="application/json" hidden>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="words.js"></script>
+  <script src="storage.js"></script>
+  <script src="pdf.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
