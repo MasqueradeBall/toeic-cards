@@ -6,12 +6,14 @@ const MASTER = 3;          // 3回連続「わかった」で習得
 const SWIPE_X = 110;       // 判定に必要な横移動量(px)
 const SWIPE_UP = 120;      // マーカー判定に必要な上移動量(px)
 const RETRY_GAP = 4;       // 「まだ」の単語を何枚後に再出題するか
+const GIVE_UP = 2;         // この周で連続何回「まだ」なら周の最後に回すか
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
 /* ---------- 出題キュー ---------- */
 let filter = "all", queue = [], cur = null, flipped = false, busy = false, history = [];
+let ngRun = new Map();     // この周での単語ごとの連続「まだ」回数
 
 function inFilter(w) {
   const r = Store.peek(w.id);
@@ -24,7 +26,7 @@ function shuffle(a) {
   for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
   return a;
 }
-function buildQueue() { queue = shuffle(WORDS.filter(inFilter)); history = []; nextCard(); }
+function buildQueue() { queue = shuffle(WORDS.filter(inFilter)); history = []; ngRun = new Map(); nextCard(); }
 function nextCard() { cur = queue.shift() || null; flipped = false; renderStudy(); }
 
 /* ---------- 学習画面の描画 ---------- */
@@ -151,11 +153,16 @@ function judge(dir) {
 
   setTimeout(() => {
     const prev = Store.has(cur.id) ? { ...Store.peek(cur.id) } : null;
-    history.push({ word: cur, prev });
+    history.push({ word: cur, prev, ng: ngRun.get(cur) || 0 });
     if (history.length > 50) history.shift();
     const r = Store.get(cur.id);
-    if (dir === "ok") { r.c++; r.s++; }
-    else { r.x++; r.s = 0; queue.splice(Math.min(RETRY_GAP, queue.length), 0, cur); }
+    if (dir === "ok") { r.c++; r.s++; ngRun.delete(cur); }
+    else {
+      r.x++; r.s = 0;
+      const n = (ngRun.get(cur) || 0) + 1;
+      if (n >= GIVE_UP) { ngRun.set(cur, 0); queue.push(cur); }   // 続けて間違えたらしばらく休ませる
+      else { ngRun.set(cur, n); queue.splice(Math.min(RETRY_GAP, queue.length), 0, cur); }
+    }
     Store.touch(cur.id);
     busy = false;
     updateHead();
@@ -181,6 +188,7 @@ function undo() {
   if (busy || !history.length) return;
   const h = history.pop();
   Store.set(h.word.id, h.prev);
+  ngRun.set(h.word, h.ng);
   queue = queue.filter(w => w !== h.word);
   if (cur) queue.unshift(cur);
   cur = h.word; flipped = false;
